@@ -11,30 +11,17 @@ const PORT: number = 3000;
 const app = express();
 app.use(express.json());
 
-app.use("/user", userRouter);
-app.use("/alert", alertRouter);
-const server = createServer(app);
-const io = new Server(server, {
-	cors: {
-		origin: "*",
-		methods: ["GET", "POST"],
-	},
-});
-
 app.use(
 	cors({
-		origin: "*",
-		methods: ["GET", "POST"],
+		origin: "http://localhost:5173",
+		methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
+		credentials: true,
 	})
 );
 
-io.on("connection", (socket) => {
-	console.log(socket.id); // x8WIv7-mJelg7on_ALbx
-	socket.on("disconnect", () => {
-		console.log("user disconnected");
-	});
-});
+app.use("/user", userRouter);
+app.use("/alert", alertRouter);
 
-server.listen(PORT, () => {
+app.listen(PORT, () => {
 	console.log(`Server is running on port ${PORT}`);
 });

@@ -10,6 +10,7 @@ import {
 	addDoc,
 	collection,
 	doc,
+	getDoc,
 	getDocs,
 	query,
 	updateDoc,
@@ -25,7 +26,7 @@ const router = express.Router();
 
 type Alert = {
 	uid: string;
-	user_id: number;
+	user_id: string;
 	staus: boolean;
 	lat: number;
 	long: number;
@@ -85,7 +86,14 @@ router.get("/All", async (req, res) => {
 		querySnapshot.forEach((doc) => {
 			alerts.push({ uid: doc.id, ...doc.data() } as Alert);
 		});
-		return res.status(200).json(alerts);
+		const id: string = alerts[0].user_id;
+
+
+		const user = collection(db, "users");
+		const userSnapshot = await getDoc(doc(user, id));
+
+		const userData = userSnapshot.data();
+		return res.status(200).json({ alerts, userData });
 	} catch (error) {
 		return res.status(500).json({ message: "Error getting alerts" });
 	}
@@ -100,7 +108,13 @@ router.get("/incomplete", async (req, res) => {
 		querySnapshot.forEach((doc) => {
 			alerts.push({ uid: doc.id, ...doc.data() } as Alert);
 		});
-		return res.status(200).json(alerts);
+		const id: string = alerts[0].user_id;
+
+		const user = collection(db, "users");
+		const userSnapshot = await getDoc(doc(user, id));
+
+		const userData = userSnapshot.data();
+		return res.status(200).json({ alerts, userData });
 	} catch (error) {
 		return res.status(500).json({ message: "Error getting alerts" });
 	}
@@ -109,6 +123,7 @@ router.get("/incomplete", async (req, res) => {
 router.post("/update", async (req, res) => {
 	try {
 		const { uid } = req.body;
+		
 		const alertsRef = doc(db, "alerts", uid);
 		await updateDoc(alertsRef, { status: true });
 		return res.status(200).json({ message: "Alert status updated" });
